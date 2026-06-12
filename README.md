@@ -1,10 +1,11 @@
-# 🚦 Ko'cha kesishuvi monitoringi — YOLO26s + Streamlit
+# 🚦 Street Crossing Monitor — YOLO26s + Streamlit
 
-YouTube jonli streamni o'qib, **odam va mashinalarni** YOLO26s bilan real vaqtda aniqlaydi,
-siz chizgan **liniyadan kesib o'tganlarni** SQLite DB ga yozadi, **grafiklar** va
-**sodda statistika chati** (AI emas) bilan ko'rsatadi. Hammasi lokal ishlaydi.
+Reads a YouTube live stream, detects **people and cars** in real time with YOLO26s,
+logs every object that crosses your **user-drawn line(s)** into a SQLite database,
+and shows **live charts** plus a **simple rule-based stats chat** (no AI).
+Everything runs locally.
 
-## O'rnatish
+## Installation
 
 ```bash
 python -m venv venv
@@ -14,60 +15,61 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-> Birinchi ishga tushirishda `yolo26s.pt` (~19 MB) avtomatik yuklab olinadi.
-> NVIDIA GPU bo'lsa, PyTorch CUDA versiyasini o'rnating — ancha tezroq ishlaydi.
+> On first run, `yolo26s.pt` (~19 MB) is downloaded automatically.
+> If you have an NVIDIA GPU, install the CUDA build of PyTorch — it runs much faster.
 
-## Ishga tushirish
+## Run
 
 ```bash
 streamlit run app.py
 ```
 
-Brauzerda `http://localhost:8501` ochiladi.
+The app opens at `http://localhost:8501`.
 
-## Foydalanish tartibi
+## How to use
 
-1. **Chap panel** — YouTube link allaqachon kiritilgan (`...WSm_r0eNl1E`), **▶️ Boshlash** bosing.
-2. **📹 Jonli video** tabida annotatsiyalangan stream va jonli hisoblagichlar ko'rinadi.
-3. **✏️ Liniyalar** tabida:
-   - **📸 Snapshot olish** bosing,
-   - rasm ustida **ikki nuqta** bosing → yangi sanash liniyasi qo'shiladi (bir nechta liniya mumkin),
-   - yoki koordinatalarni qo'lda kiriting.
-4. Obyekt liniyani kesib o'tganda DB ga yoziladi: `timestamp, type (person/car), direction (N->S, S->N, E->W, W->E), line_name`.
-5. **📊 Analitika** — har 3 soniyada yangilanadi: bugungi soatlik traffic, yo'nalishlar, 14 kunlik dinamika, oxirgi yozuvlar.
-6. **💬 Chat** — sodda savollar:
-   - "Bugun qancha odam o'tdi?"
-   - "Jami qancha mashina?"
-   - "Oxirgi soatda qancha?"
-   - "Qaysi yo'nalishda ko'p?"
-   - "Eng band soat?"
-   - "Liniyalar bo'yicha statistika"
+1. **Left sidebar** — the YouTube link is pre-filled (`...WSm_r0eNl1E`). Click **▶️ Boshlash (Start)**.
+2. **📹 Live video** tab shows the annotated stream with live counters and FPS.
+3. **✏️ Lines** tab:
+   - Click **📸 Take snapshot**,
+   - then click **two points** on the image → a new counting line is added (multiple lines supported),
+   - or enter coordinates manually in the expander.
+4. When an object crosses a line, a row is written to the DB:
+   `timestamp, type (person/car), direction (N->S, S->N, E->W, W->E), line_name`.
+5. **📊 Analytics** — auto-refreshes every 3 seconds: today's hourly traffic, direction breakdown, 14-day trend, latest DB rows.
+6. **💬 Chat** — simple questions (rule-based, not AI):
+   - "Bugun qancha odam o'tdi?" (How many people today?)
+   - "Jami qancha mashina?" (Total cars?)
+   - "Oxirgi soatda qancha?" (Last hour?)
+   - "Qaysi yo'nalishda ko'p?" (Which direction is busiest?)
+   - "Eng band soat?" (Busiest hour?)
+   - "Liniyalar bo'yicha statistika" (Stats per line)
 
-## Yengil ishlashi uchun maslahatlar
+## Tips for lightweight performance
 
-| Sozlama | Tavsiya |
+| Setting | Recommendation |
 |---|---|
-| Model | `yolo26n.pt` — eng yengil (CPU uchun), `yolo26s.pt` — aniqroq |
-| Inference o'lchami | 320–480 (CPU), 640 (GPU) |
-| Kadr tashlash | 2–4 (real vaqtda qolish uchun) |
+| Model | `yolo26n.pt` — lightest (good for CPU), `yolo26s.pt` — more accurate |
+| Inference size | 320–480 (CPU), 640 (GPU) |
+| Frame skip | 2–4 (to stay real-time) |
 
-## Demo ma'lumotlar (ixtiyoriy)
+## Demo data (optional)
 
-Grafiklarni darhol sinash uchun:
+To see the charts populated right away:
 
 ```bash
 python seed_db.py
 ```
 
-## Fayllar
+## Files
 
-- `app.py` — asosiy ilova (detektsiya, DB, UI, chat)
-- `seed_db.py` — ixtiyoriy demo ma'lumot generatori
-- `street_crossing.db` — avtomatik yaratiladi
+- `app.py` — main app (detection, DB, UI, chat)
+- `seed_db.py` — optional demo data generator
+- `street_crossing.db` — created automatically
 - `requirements.txt`
 
-## Eslatmalar
+## Notes
 
-- YouTube live URL muddati tugasa, ilova **avtomatik qayta ulanadi**.
-- Webcam uchun manba sifatida `0` kiriting; RTSP/MP4 ham ishlaydi.
-- `lapx` paketi ByteTrack tracking uchun kerak.
+- If the YouTube live URL expires, the app **reconnects automatically**.
+- For a webcam, enter `0` as the source; RTSP and local MP4 files also work.
+- The `lapx` package is required for ByteTrack tracking.
